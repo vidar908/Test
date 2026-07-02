@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html lang="no">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Klikk Spillet</title>
+
+<style>
+
+body{
+
+    margin:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    height:100vh;
+
+    background:#4FC3F7;
+
+    font-family:Arial;
+
+}
+
+#box{
+
+    width:120px;
+
+    height:120px;
+
+    background:red;
+
+    color:white;
+
+    font-size:40px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    border-radius:15px;
+
+    cursor:pointer;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="box">0</div>
+
+<script>
+
+let score=0;
+
+box.onclick=function(){
+
+    score++;
+
+    box.innerHTML=score;
+
+    box.style.left=Math.random()*300+"px";
+
+    box.style.top=Math.random()*500+"px";
+
+    box.style.position="absolute";
+
+};
+
+</script>
+
+</body>
+
+</html
