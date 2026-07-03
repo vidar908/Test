@@ -19,6 +19,7 @@
       height: 100vh;
       background: #4FC3F7;
       font-family: Arial, sans-serif;
+      overflow: hidden;
     }
 
     #box {
@@ -93,6 +94,68 @@
       border: 3px solid yellow;
     }
 
+    .character-walker {
+      position: fixed;
+      bottom: 80px;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      animation: walkAcross 5s ease-in-out forwards;
+      z-index: 9998;
+    }
+
+    .walker-body {
+      font-size: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sign {
+      background: #FFD700;
+      color: #000;
+      padding: 15px 25px;
+      border-radius: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      white-space: nowrap;
+      border: 4px solid #000;
+      box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+    }
+
+    .peek-container {
+      position: fixed;
+      font-size: 100px;
+      z-index: 9998;
+      animation: peekInOut 3s ease-in-out forwards;
+    }
+
+    .peek-eyes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .eyebrow {
+      position: absolute;
+      width: 50px;
+      height: 14px;
+      background: #000;
+      border-radius: 15px;
+      top: -35px;
+    }
+
+    .eyebrow-left {
+      left: -70px;
+      transform: rotate(-25deg);
+    }
+
+    .eyebrow-right {
+      right: -70px;
+      transform: rotate(25deg);
+    }
+
     @keyframes explode {
       0% {
         opacity: 1;
@@ -129,13 +192,41 @@
         transform: translate(-50%, -150%) scale(2);
       }
     }
+
+    @keyframes walkAcross {
+      0% {
+        left: -200px;
+      }
+      100% {
+        left: 100vw;
+      }
+    }
+
+    @keyframes peekInOut {
+      0% {
+        right: -150px;
+        opacity: 0;
+      }
+      20% {
+        right: 30px;
+        opacity: 1;
+      }
+      80% {
+        right: 30px;
+        opacity: 1;
+      }
+      100% {
+        right: -150px;
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
-  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🎉</div>
+  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 50 clicks = 👀</div>
 
   <script>
     let score = 0;
@@ -160,7 +251,6 @@
     }
 
     function playClickSound() {
-      // Regular click sound
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -180,14 +270,12 @@
     }
 
     function playExplosionSound() {
-      // Play the custom explosion sound
       explosionSound.currentTime = 0;
       explosionSound.volume = 0.8;
       explosionSound.play().catch(err => console.log('Sound play error:', err));
     }
 
     function createBigExplosion() {
-      // Create big explosion with many particles
       const explosionCount = 30;
       const centerX = window.innerWidth / 2;
       const centerY = window.innerHeight / 2;
@@ -245,13 +333,56 @@
       }
     }
 
+    function showCharacterWalking() {
+      const walker = document.createElement('div');
+      walker.className = 'character-walker';
+      
+      const body = document.createElement('div');
+      body.className = 'walker-body';
+      body.textContent = '🚶';
+      
+      const sign = document.createElement('div');
+      sign.className = 'sign';
+      sign.textContent = 'You can do it!';
+      
+      walker.appendChild(body);
+      walker.appendChild(sign);
+      
+      document.body.appendChild(walker);
+      setTimeout(() => walker.remove(), 5000);
+    }
+
+    function showCharacterPeek() {
+      const peek = document.createElement('div');
+      peek.className = 'peek-container';
+      
+      const eyesContainer = document.createElement('div');
+      eyesContainer.className = 'peek-eyes';
+      eyesContainer.textContent = '👀';
+      
+      // Add left eyebrow
+      const leftBrow = document.createElement('div');
+      leftBrow.className = 'eyebrow eyebrow-left';
+      eyesContainer.appendChild(leftBrow);
+      
+      // Add right eyebrow
+      const rightBrow = document.createElement('div');
+      rightBrow.className = 'eyebrow eyebrow-right';
+      eyesContainer.appendChild(rightBrow);
+      
+      peek.appendChild(eyesContainer);
+      peek.style.top = '30vh';
+      
+      document.body.appendChild(peek);
+      setTimeout(() => peek.remove(), 3000);
+    }
+
     function handleClick() {
       score++;
 
       playClickSound();
 
       if (score % 10 === 0) {
-        // EXPLOSION MODE!
         playExplosionSound();
         createBigExplosion();
         showMessage('helt ærlig bror 💥');
@@ -263,7 +394,12 @@
         box.textContent = score;
       }
 
-      if (score % 20 === 0) {
+      if (score % 50 === 0) {
+        // Show peek at 50, 100, 150, etc.
+        showCharacterPeek();
+      } else if (score % 20 === 0) {
+        // Show walking character at 20, 40, 60, 80, etc. (but not 50, 100, etc.)
+        showCharacterWalking();
         showCelebration();
       }
 
@@ -271,7 +407,6 @@
       moveBox();
     }
 
-    // Add animation styles
     const style = document.createElement('style');
     style.textContent = `
       @keyframes celebrate {
