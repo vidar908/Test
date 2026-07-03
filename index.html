@@ -1,85 +1,105 @@
 <!DOCTYPE html>
-
 <html lang="no">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Klikk Spillet</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<meta charset="UTF-8">
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #4FC3F7;
+      font-family: Arial, sans-serif;
+    }
 
-<title>Klikk Spillet</title>
+    #box {
+      width: 120px;
+      height: 120px;
+      background: red;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 15px;
+      border: none;
+      cursor: pointer;
+      position: absolute;
+      transition: all 0.1s ease;
+      user-select: none;
+    }
 
-<style>
+    #box:hover {
+      background: darkred;
+      transform: scale(1.05);
+    }
 
-body{
+    #box:active {
+      transform: scale(0.95);
+    }
 
-    margin:0;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    height:100vh;
-
-    background:#4FC3F7;
-
-    font-family:Arial;
-
-}
-
-#box{
-
-    width:120px;
-
-    height:120px;
-
-    background:red;
-
-    color:white;
-
-    font-size:40px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    border-radius:15px;
-
-    cursor:pointer;
-
-}
-
-</style>
-
+    #score-display {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+  </style>
 </head>
 
 <body>
+  <div id="score-display">Score: 0</div>
+  <button id="box" aria-label="Click to increase score">0</button>
 
-<div id="box">0</div>
+  <script>
+    let score = 0;
+    const box = document.getElementById('box');
+    const scoreDisplay = document.getElementById('score-display');
 
-<script>
+    function moveBox() {
+      const maxX = window.innerWidth - box.offsetWidth;
+      const maxY = window.innerHeight - box.offsetHeight;
+      
+      const randomX = Math.random() * maxX;
+      const randomY = Math.random() * maxY;
+      
+      box.style.left = randomX + 'px';
+      box.style.top = randomY + 'px';
+    }
 
-let score=0;
+    function handleClick() {
+      score++;
+      box.textContent = score;
+      scoreDisplay.textContent = 'Score: ' + score;
+      moveBox();
+    }
 
-box.onclick=function(){
+    // Mouse click handler
+    box.addEventListener('click', handleClick);
 
-    score++;
+    // Keyboard accessibility (Enter and Space)
+    box.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        handleClick();
+      }
+    });
 
-    box.innerHTML=score;
-
-    box.style.left=Math.random()*300+"px";
-
-    box.style.top=Math.random()*500+"px";
-
-    box.style.position="absolute";
-
-};
-
-</script>
-
+    // Initialize box position
+    moveBox();
+  </script>
 </body>
 
-</html
+</html>
