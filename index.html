@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+lo<!DOCTYPE html>
 <html lang="no">
 
 <head>
@@ -106,11 +106,13 @@ box.style.background = colors[Math.floor(Math.random() * colors.length)];}
       if (score % 10 === 0) {
 
     new Audio("Nytt opptak 2.m4a").play();
-}
 box.textContent = "💥";
-setTimeout(() => box.textContent = score, 300);
-if (score % 20 === 0) {
 
+setTimeout(() => box.textContent = score, 300);
+
+
+}
+if (score % 20 === 0){
     document.getElementById("funnyPic").style.display = "block";
 
     setTimeout(function() {
