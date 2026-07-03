@@ -83,6 +83,11 @@ const colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "c
 box.style.background = colors[Math.floor(Math.random() * colors.length)];}
     function handleClick() {
       score++;
+      if (score % 10 === 0) {
+
+    new Audio("Nytt opptak 2.m4a").play();
+}
+
       box.textContent = score;
       scoreDisplay.textContent = 'Score: ' + score;
       moveBox();
