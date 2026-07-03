@@ -55,7 +55,27 @@
       font-size: 24px;
       font-weight: bold;
       color: white;
-    }
+    }#funnyPic {
+
+    display: none;
+
+    position: fixed;
+
+    top: 50%;
+
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: 250px;
+
+    max-width: 80%;
+
+    border-radius: 15px;
+
+    z-index: 9999;
+
+}
   </style>
 </head>
 
@@ -87,8 +107,22 @@ box.style.background = colors[Math.floor(Math.random() * colors.length)];}
 
     new Audio("Nytt opptak 2.m4a").play();
 }
+if (score % 20 === 0) {
+
+    document.getElementById("funnyPic").style.display = "block";
+
+    setTimeout(function() {
+
+        document.getElementById("funnyPic").style.display = "none";
+
+    }, 2000);
+    }
+
+}
 
       box.textContent = score;
+      
+      
       scoreDisplay.textContent = 'Score: ' + score;
       moveBox();
     }
@@ -108,6 +142,7 @@ box.style.background = colors[Math.floor(Math.random() * colors.length)];}
 alert("Ny versjon av spillet!");
     moveBox();
   </script>
+  <img id="funnyPic" src="IMG_5546.jpeg" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:300px;z-index:1000;">
 </body>
 
 </html>
