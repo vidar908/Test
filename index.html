@@ -1,4 +1,4 @@
-lo<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="no">
 
 <head>
@@ -102,30 +102,45 @@ const colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "c
 
 box.style.background = colors[Math.floor(Math.random() * colors.length)];}
     function handleClick() {
-      score++;
-      if (score % 10 === 0) {
 
-    new Audio("Nytt opptak 2.m4a").play();
-box.textContent = "💥";
+    score++;
 
-setTimeout(() => box.textContent = score, 300);
-if (score % 20 === 0){
-    document.getElementById("funnyPic").style.display = "block";
+    if (score % 10 === 0) {
 
-    setTimeout(function() {
+        new Audio("Nytt opptak 2.m4a").play();
 
-        document.getElementById("funnyPic").style.display = "none";
+        box.textContent = "💥";
 
-    }, 2000);
+        setTimeout(() => {
+
+            box.textContent = score;
+
+        }, 300);
+
+    } else {
+
+        box.textContent = score;
+
     }
-     
 
-      box.textContent = score;
-      
-      
-      scoreDisplay.textContent = 'Score: ' + score;
-      moveBox();
+    if (score % 20 === 0) {
+
+        document.getElementById("funnyPic").style.display = "block";
+
+        setTimeout(function () {
+
+            document.getElementById("funnyPic").style.display = "none";
+
+        }, 2000);
+
     }
+
+    scoreDisplay.textContent = "Score: " + score;
+
+    moveBox();
+    }
+
+}
 
     // Mouse click handler
     box.addEventListener('click', handleClick);
