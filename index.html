@@ -269,6 +269,16 @@
       left: 70%;
     }
 
+    .bull-charge {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      font-size: 40px;
+      z-index: 9997;
+      animation: bullCharge 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      transform: translate(-50%, -50%);
+    }
+
     @keyframes explode {
       0% {
         opacity: 1;
@@ -393,18 +403,36 @@
         opacity: 1;
       }
     }
+
+    @keyframes bullCharge {
+      0% {
+        font-size: 40px;
+        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(0.2);
+      }
+      50% {
+        font-size: 150px;
+        opacity: 1;
+      }
+      100% {
+        font-size: 400px;
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
   </style>
 </head>
 
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
-  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 30 clicks = 🕵️<br>Every 50 clicks = 👀<br>Every 75 clicks = ⚡</div>
+  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 30 clicks = 🕵️<br>Every 50 clicks = 👀<br>Every 75 clicks = ⚡<br>Random = 🐂 CHARGE!</div>
 
   <script>
     let score = 0;
     const box = document.getElementById('box');
     const scoreDisplay = document.getElementById('score-display');
+    let bullChargeTimeout = null;
     
     // Load the custom explosion sound
     const explosionSound = new Audio('https://raw.githubusercontent.com/vidar908/Test/main/Nytt%20opptak%202.m4a');
@@ -471,6 +499,71 @@
       
       noiseSource.start(audioContext.currentTime);
       noiseSource.stop(audioContext.currentTime + 0.8);
+    }
+
+    function playBullSnort() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create snorting sound
+      const bufferSize = audioContext.sampleRate * 0.4;
+      const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      const noiseSource = audioContext.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      
+      const gainNode = audioContext.createGain();
+      noiseSource.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.02, audioContext.currentTime + 0.4);
+      
+      noiseSource.start(audioContext.currentTime);
+      noiseSource.stop(audioContext.currentTime + 0.4);
+      
+      // Add low frequency for charging sound
+      const oscillator = audioContext.createOscillator();
+      const gainNode2 = audioContext.createGain();
+      oscillator.connect(gainNode2);
+      gainNode2.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.4);
+      oscillator.type = 'sine';
+      
+      gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    }
+
+    function playBullCharge() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create hoofbeats/charging sound
+      for (let beat = 0; beat < 3; beat++) {
+        const startTime = audioContext.currentTime + (beat * 0.3);
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(150 - beat * 20, startTime);
+        oscillator.frequency.exponentialRampToValueAtTime(100, startTime + 0.2);
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.4, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.2);
+      }
     }
 
     function createBigExplosion() {
@@ -660,6 +753,31 @@
       }, 800);
     }
 
+    function showBullCharge() {
+      playBullSnort();
+      setTimeout(() => playBullCharge(), 200);
+      
+      const bull = document.createElement('div');
+      bull.className = 'bull-charge';
+      bull.textContent = '🐂';
+      
+      document.body.appendChild(bull);
+      setTimeout(() => bull.remove(), 2000);
+      
+      // Schedule next bull charge randomly between 8-20 seconds
+      scheduleBullCharge();
+    }
+
+    function scheduleBullCharge() {
+      if (bullChargeTimeout) {
+        clearTimeout(bullChargeTimeout);
+      }
+      const randomDelay = Math.random() * 12000 + 8000; // 8-20 seconds
+      bullChargeTimeout = setTimeout(() => {
+        showBullCharge();
+      }, randomDelay);
+    }
+
     function handleClick() {
       score++;
 
@@ -721,6 +839,9 @@
     });
 
     moveBox();
+    
+    // Start the random bull charge schedule
+    scheduleBullCharge();
   </script>
 </body>
 
