@@ -123,6 +123,36 @@
       box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
     }
 
+    .sneaky-character {
+      position: fixed;
+      bottom: 60px;
+      display: flex;
+      align-items: flex-end;
+      gap: 15px;
+      animation: sneakAcross 6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      z-index: 9998;
+    }
+
+    .sneaky-body {
+      font-size: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0.8;
+    }
+
+    .sneaky-sign {
+      background: #FF6B9D;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap;
+      border: 3px solid #000;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+    }
+
     .peek-container {
       position: fixed;
       font-size: 100px;
@@ -154,6 +184,89 @@
     .eyebrow-right {
       right: -70px;
       transform: rotate(25deg);
+    }
+
+    .peek-head {
+      position: fixed;
+      z-index: 9998;
+      animation: peekHeadInOut 3s ease-in-out forwards;
+    }
+
+    .head-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .bushy-eyebrow {
+      width: 55px;
+      height: 16px;
+      background: #1a1a1a;
+      border-radius: 20px;
+      margin: 5px 8px;
+      position: relative;
+    }
+
+    .bushy-eyebrow::before,
+    .bushy-eyebrow::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #1a1a1a;
+      border-radius: 50%;
+      top: -2px;
+    }
+
+    .bushy-eyebrow::before {
+      left: -8px;
+    }
+
+    .bushy-eyebrow::after {
+      right: -8px;
+    }
+
+    .storm-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 8000;
+      animation: stormDarken 0.5s ease-in forwards;
+      pointer-events: none;
+    }
+
+    .thundercloud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(100, 100, 150, 0.4) 0%, rgba(50, 50, 80, 0.6) 100%);
+      z-index: 8000;
+      animation: cloudRoll 0.6s ease-in-out forwards;
+    }
+
+    .lightning-bolt {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      width: 15px;
+      height: 100vh;
+      background: linear-gradient(90deg, transparent, #fff 45%, #fff 55%, transparent);
+      z-index: 8001;
+      animation: lightningFlash 0.1s ease-in-out;
+      transform: translateX(-50%);
+    }
+
+    .lightning-bolt.bolt2 {
+      left: 30%;
+    }
+
+    .lightning-bolt.bolt3 {
+      left: 70%;
     }
 
     @keyframes explode {
@@ -202,6 +315,20 @@
       }
     }
 
+    @keyframes sneakAcross {
+      0% {
+        left: -200px;
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 0.7;
+      }
+      100% {
+        left: 100vw;
+        opacity: 0.6;
+      }
+    }
+
     @keyframes peekInOut {
       0% {
         right: -150px;
@@ -220,13 +347,59 @@
         opacity: 0;
       }
     }
+
+    @keyframes peekHeadInOut {
+      0% {
+        right: -150px;
+        opacity: 0;
+      }
+      20% {
+        right: 30px;
+        opacity: 1;
+      }
+      80% {
+        right: 30px;
+        opacity: 1;
+      }
+      100% {
+        right: -150px;
+        opacity: 0;
+      }
+    }
+
+    @keyframes stormDarken {
+      0% {
+        background: transparent;
+      }
+      100% {
+        background: rgba(40, 40, 60, 0.3);
+      }
+    }
+
+    @keyframes cloudRoll {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes lightningFlash {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
-  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 50 clicks = 👀</div>
+  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 30 clicks = 🕵️<br>Every 50 clicks = 👀<br>Every 75 clicks = ⚡</div>
 
   <script>
     let score = 0;
@@ -273,6 +446,31 @@
       explosionSound.currentTime = 0;
       explosionSound.volume = 0.8;
       explosionSound.play().catch(err => console.log('Sound play error:', err));
+    }
+
+    function playThunderSound() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create a deep rumbling thunder sound
+      const bufferSize = audioContext.sampleRate * 0.8;
+      const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      const noiseSource = audioContext.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      
+      const gainNode = audioContext.createGain();
+      noiseSource.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.05, audioContext.currentTime + 0.8);
+      
+      noiseSource.start(audioContext.currentTime);
+      noiseSource.stop(audioContext.currentTime + 0.8);
     }
 
     function createBigExplosion() {
@@ -352,6 +550,25 @@
       setTimeout(() => walker.remove(), 5000);
     }
 
+    function showSneakyCharacter() {
+      const sneaky = document.createElement('div');
+      sneaky.className = 'sneaky-character';
+      
+      const body = document.createElement('div');
+      body.className = 'sneaky-body';
+      body.textContent = '🕵️';
+      
+      const sign = document.createElement('div');
+      sign.className = 'sneaky-sign';
+      sign.textContent = 'You can do this!';
+      
+      sneaky.appendChild(body);
+      sneaky.appendChild(sign);
+      
+      document.body.appendChild(sneaky);
+      setTimeout(() => sneaky.remove(), 6000);
+    }
+
     function showCharacterPeek() {
       const peek = document.createElement('div');
       peek.className = 'peek-container';
@@ -360,12 +577,10 @@
       eyesContainer.className = 'peek-eyes';
       eyesContainer.textContent = '👀';
       
-      // Add left eyebrow
       const leftBrow = document.createElement('div');
       leftBrow.className = 'eyebrow eyebrow-left';
       eyesContainer.appendChild(leftBrow);
       
-      // Add right eyebrow
       const rightBrow = document.createElement('div');
       rightBrow.className = 'eyebrow eyebrow-right';
       eyesContainer.appendChild(rightBrow);
@@ -375,6 +590,74 @@
       
       document.body.appendChild(peek);
       setTimeout(() => peek.remove(), 3000);
+    }
+
+    function showHeadPeek() {
+      const headPeek = document.createElement('div');
+      headPeek.className = 'peek-head';
+      
+      const headTop = document.createElement('div');
+      headTop.className = 'head-top';
+      
+      const leftBrow = document.createElement('div');
+      leftBrow.className = 'bushy-eyebrow';
+      headTop.appendChild(leftBrow);
+      
+      const eyes = document.createElement('div');
+      eyes.style.fontSize = '60px';
+      eyes.textContent = '👀';
+      headTop.appendChild(eyes);
+      
+      const rightBrow = document.createElement('div');
+      rightBrow.className = 'bushy-eyebrow';
+      headTop.appendChild(rightBrow);
+      
+      headPeek.appendChild(headTop);
+      headPeek.style.top = '20vh';
+      
+      document.body.appendChild(headPeek);
+      setTimeout(() => headPeek.remove(), 3000);
+    }
+
+    function showThunderstorm() {
+      playThunderSound();
+      
+      // Dark overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'storm-overlay';
+      document.body.appendChild(overlay);
+      
+      // Thunder cloud
+      const cloud = document.createElement('div');
+      cloud.className = 'thundercloud';
+      document.body.appendChild(cloud);
+      
+      // Lightning bolts
+      setTimeout(() => {
+        const bolt1 = document.createElement('div');
+        bolt1.className = 'lightning-bolt';
+        document.body.appendChild(bolt1);
+        setTimeout(() => bolt1.remove(), 150);
+      }, 100);
+      
+      setTimeout(() => {
+        const bolt2 = document.createElement('div');
+        bolt2.className = 'lightning-bolt bolt2';
+        document.body.appendChild(bolt2);
+        setTimeout(() => bolt2.remove(), 150);
+      }, 300);
+      
+      setTimeout(() => {
+        const bolt3 = document.createElement('div');
+        bolt3.className = 'lightning-bolt bolt3';
+        document.body.appendChild(bolt3);
+        setTimeout(() => bolt3.remove(), 150);
+      }, 500);
+      
+      setTimeout(() => {
+        overlay.remove();
+        cloud.remove();
+      }, 800);
     }
 
     function handleClick() {
@@ -394,11 +677,17 @@
         box.textContent = score;
       }
 
-      if (score % 50 === 0) {
-        // Show peek at 50, 100, 150, etc.
+      if (score % 75 === 0) {
+        // Show thunderstorm at 75, 150, 225, etc.
+        showThunderstorm();
+      } else if (score % 50 === 0) {
+        // Show peek at 50, 100, 150, etc. (but not 75, 150, etc.)
         showCharacterPeek();
+      } else if (score % 30 === 0) {
+        // Show sneaky character at 30, 60, 90, etc. (but not 50, 75, etc.)
+        showSneakyCharacter();
       } else if (score % 20 === 0) {
-        // Show walking character at 20, 40, 60, 80, etc. (but not 50, 100, etc.)
+        // Show walking character at 20, 40, 60, 80, etc. (but not 30, 50, 75, etc.)
         showCharacterWalking();
         showCelebration();
       }
