@@ -97,6 +97,23 @@
       border: 3px solid yellow;
     }
 
+    .cheese-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 105, 180, 0.95);
+      color: white;
+      padding: 40px 60px;
+      border-radius: 25px;
+      font-size: 32px;
+      font-weight: bold;
+      z-index: 9999;
+      animation: cheeseFlash 1.5s ease forwards;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+      border: 4px solid #FF1493;
+    }
+
     .character-walker {
       position: fixed;
       bottom: 80px;
@@ -286,6 +303,44 @@
       animation: screenShake 0.15s cubic-bezier(0.36, 0, 0.66, -0.56) infinite;
     }
 
+    .pink-circle {
+      position: fixed;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle at 30% 30%, #FF69B4, #FF1493);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 200;
+      animation: pinkCircleFloat 4s ease-in-out forwards;
+      box-shadow: 0 0 20px #FF1493, 0 0 40px rgba(255, 20, 147, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      border: 3px solid #FF69B4;
+    }
+
+    .pink-circle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px #FF1493, 0 0 60px rgba(255, 20, 147, 0.7);
+    }
+
+    .pointing-finger {
+      position: fixed;
+      font-size: 100px;
+      cursor: pointer;
+      z-index: 200;
+      animation: fingerBounce 2s ease-in-out forwards;
+      user-select: none;
+    }
+
+    .pointing-finger:hover {
+      transform: scale(1.2);
+    }
+
     @keyframes explode {
       0% {
         opacity: 1;
@@ -309,6 +364,18 @@
       100% {
         opacity: 0;
         transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    @keyframes cheeseFlash {
+      0%, 100% {
+        opacity: 0;
+      }
+      10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90% {
+        opacity: 1;
+      }
+      15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95% {
+        opacity: 0.3;
       }
     }
 
@@ -472,19 +539,57 @@
         transform: translate(-10px, 10px);
       }
     }
+
+    @keyframes pinkCircleFloat {
+      0% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+      20% {
+        opacity: 1;
+        transform: scale(1) translateY(-20px);
+      }
+      80% {
+        opacity: 1;
+        transform: scale(1) translateY(20px);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+    }
+
+    @keyframes fingerBounce {
+      0%, 100% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      20% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1) translateY(-10px);
+      }
+      80% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
   </style>
 </head>
 
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
-  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 30 clicks = 🕵️<br>Every 50 clicks = 👀<br>Every 75 clicks = ⚡<br>Random = 🐂 CRAZY CHARGE!</div>
+  <div id="instructions">Click the box as fast as you can!<br>🔴 Pink circle = +1000!<br>☝️ Finger = Fart!<br>Every 10 clicks = 💥<br>Random = 🐂 CHARGE!</div>
 
   <script>
     let score = 0;
     const box = document.getElementById('box');
     const scoreDisplay = document.getElementById('score-display');
     let bullChargeTimeout = null;
+    let bonusTimeout = null;
     
     // Load the custom explosion sound
     const explosionSound = new Audio('https://raw.githubusercontent.com/vidar908/Test/main/Nytt%20opptak%202.m4a');
@@ -623,6 +728,49 @@
       }
     }
 
+    function playFartSound() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create a LONG fart sound (3 seconds)
+      const bufferSize = audioContext.sampleRate * 3;
+      const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      
+      const noiseSource = audioContext.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      
+      const gainNode = audioContext.createGain();
+      noiseSource.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.05, audioContext.currentTime + 3);
+      
+      noiseSource.start(audioContext.currentTime);
+      noiseSource.stop(audioContext.currentTime + 3);
+      
+      // Add some pitch modulation
+      const oscillator = audioContext.createOscillator();
+      const gainNode2 = audioContext.createGain();
+      oscillator.connect(gainNode2);
+      gainNode2.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 1.5);
+      oscillator.frequency.exponentialRampToValueAtTime(40, audioContext.currentTime + 3);
+      oscillator.type = 'sine';
+      
+      gainNode2.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode2.gain.exponentialRampToValueAtTime(0.02, audioContext.currentTime + 3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 3);
+    }
+
     function createBigExplosion() {
       const explosionCount = 30;
       const centerX = window.innerWidth / 2;
@@ -660,6 +808,15 @@
       setTimeout(() => popup.remove(), 1200);
     }
 
+    function showCheeseMessage() {
+      const cheese = document.createElement('div');
+      cheese.className = 'cheese-message';
+      cheese.textContent = 'You smell like brown cheese.';
+      document.body.appendChild(cheese);
+      
+      setTimeout(() => cheese.remove(), 1500);
+    }
+
     function showCelebration() {
       for (let i = 0; i < 3; i++) {
         const celebration = document.createElement('div');
@@ -679,6 +836,76 @@
           celebration.remove();
         }, 2000 + i * 300);
       }
+    }
+
+    function showPinkCircle() {
+      const randomX = Math.random() * (window.innerWidth - 80);
+      const randomY = Math.random() * (window.innerHeight - 200);
+      
+      const circle = document.createElement('div');
+      circle.className = 'pink-circle';
+      circle.textContent = '+1000';
+      circle.style.left = randomX + 'px';
+      circle.style.top = randomY + 'px';
+      
+      circle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        score += 1000;
+        scoreDisplay.textContent = 'Score: ' + score;
+        showCheeseMessage();
+        circle.remove();
+        scheduleBonusItems();
+      });
+      
+      document.body.appendChild(circle);
+      setTimeout(() => {
+        if (circle.parentNode) {
+          circle.remove();
+          scheduleBonusItems();
+        }
+      }, 4000);
+    }
+
+    function showPointingFinger() {
+      const randomX = Math.random() * (window.innerWidth - 100);
+      const randomY = Math.random() * (window.innerHeight - 200);
+      
+      const finger = document.createElement('div');
+      finger.className = 'pointing-finger';
+      finger.textContent = '☝️';
+      finger.style.left = randomX + 'px';
+      finger.style.top = randomY + 'px';
+      
+      finger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playFartSound();
+        finger.remove();
+        scheduleBonusItems();
+      });
+      
+      document.body.appendChild(finger);
+      setTimeout(() => {
+        if (finger.parentNode) {
+          finger.remove();
+          scheduleBonusItems();
+        }
+      }, 2000);
+    }
+
+    function scheduleBonusItems() {
+      if (bonusTimeout) {
+        clearTimeout(bonusTimeout);
+      }
+      const randomDelay = Math.random() * 8000 + 5000; // 5-13 seconds
+      const randomType = Math.random();
+      
+      bonusTimeout = setTimeout(() => {
+        if (randomType < 0.6) {
+          showPinkCircle();
+        } else {
+          showPointingFinger();
+        }
+      }, randomDelay);
     }
 
     function showCharacterWalking() {
@@ -906,6 +1133,9 @@
     
     // Start the random bull charge schedule
     scheduleBullCharge();
+    
+    // Start bonus items schedule
+    scheduleBonusItems();
   </script>
 </body>
 
