@@ -55,6 +55,7 @@
       font-size: 24px;
       font-weight: bold;
       color: white;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
 
     #funnyPic {
@@ -67,6 +68,28 @@
       max-width: 80%;
       border-radius: 15px;
       z-index: 9999;
+      animation: popIn 0.3s ease;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    #instructions {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      color: white;
+      font-size: 14px;
+      text-align: right;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
   </style>
 </head>
@@ -74,6 +97,7 @@
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
+  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥</div>
 
   <script>
     let score = 0;
@@ -94,11 +118,30 @@
       box.style.background = colors[Math.floor(Math.random() * colors.length)];
     }
 
+    function playSound() {
+      // Create a simple beep sound using Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
     function handleClick() {
       score++;
 
       if (score % 10 === 0) {
-        new Audio("Nytt opptak 2.m4a").play();
+        playSound();
         box.textContent = "💥";
         setTimeout(() => {
           box.textContent = score;
@@ -108,15 +151,46 @@
       }
 
       if (score % 20 === 0) {
-        document.getElementById("funnyPic").style.display = "block";
-        setTimeout(function () {
-          document.getElementById("funnyPic").style.display = "none";
-        }, 2000);
+        showCelebration();
       }
 
       scoreDisplay.textContent = "Score: " + score;
       moveBox();
     }
+
+    function showCelebration() {
+      // Create a festive celebration effect
+      const celebration = document.createElement('div');
+      celebration.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 80px;
+        z-index: 9999;
+        animation: celebrate 2s ease-out forwards;
+      `;
+      celebration.textContent = '🎉';
+      document.body.appendChild(celebration);
+      
+      setTimeout(() => celebration.remove(), 2000);
+    }
+
+    // Add celebration animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes celebrate {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -150%) scale(2);
+        }
+      }
+    `;
+    document.head.appendChild(style);
 
     // Mouse click handler
     box.addEventListener('click', handleClick);
@@ -129,11 +203,9 @@
       }
     });
 
-    // Initialize box position
-    alert("Ny versjon av spillet!");
+    // Initialize box position on page load
     moveBox();
   </script>
-  <img id="funnyPic" src="IMG_5546.jpeg" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:300px;z-index:1000;">
 </body>
 
 </html>
