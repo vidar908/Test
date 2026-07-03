@@ -55,27 +55,19 @@
       font-size: 24px;
       font-weight: bold;
       color: white;
-    }#funnyPic {
+    }
 
-    display: none;
-
-    position: fixed;
-
-    top: 50%;
-
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-
-    width: 250px;
-
-    max-width: 80%;
-
-    border-radius: 15px;
-
-    z-index: 9999;
-
-}
+    #funnyPic {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 250px;
+      max-width: 80%;
+      border-radius: 15px;
+      z-index: 9999;
+    }
   </style>
 </head>
 
@@ -97,50 +89,34 @@
       
       box.style.left = randomX + 'px';
       box.style.top = randomY + 'px';
-    
-const colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"];
+      
+      const colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"];
+      box.style.background = colors[Math.floor(Math.random() * colors.length)];
+    }
 
-box.style.background = colors[Math.floor(Math.random() * colors.length)];}
     function handleClick() {
+      score++;
 
-    score++;
-
-    if (score % 10 === 0) {
-
+      if (score % 10 === 0) {
         new Audio("Nytt opptak 2.m4a").play();
-
         box.textContent = "💥";
-
         setTimeout(() => {
-
-            box.textContent = score;
-
+          box.textContent = score;
         }, 300);
-
-    } else {
-
+      } else {
         box.textContent = score;
+      }
 
-    }
-
-    if (score % 20 === 0) {
-
+      if (score % 20 === 0) {
         document.getElementById("funnyPic").style.display = "block";
-
         setTimeout(function () {
-
-            document.getElementById("funnyPic").style.display = "none";
-
+          document.getElementById("funnyPic").style.display = "none";
         }, 2000);
+      }
 
+      scoreDisplay.textContent = "Score: " + score;
+      moveBox();
     }
-
-    scoreDisplay.textContent = "Score: " + score;
-
-    moveBox();
-    }
-
-}
 
     // Mouse click handler
     box.addEventListener('click', handleClick);
@@ -154,7 +130,7 @@ box.style.background = colors[Math.floor(Math.random() * colors.length)];}
     });
 
     // Initialize box position
-alert("Ny versjon av spillet!");
+    alert("Ny versjon av spillet!");
     moveBox();
   </script>
   <img id="funnyPic" src="IMG_5546.jpeg" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);max-width:300px;z-index:1000;">
