@@ -58,30 +58,6 @@
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
 
-    #funnyPic {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 250px;
-      max-width: 80%;
-      border-radius: 15px;
-      z-index: 9999;
-      animation: popIn 0.3s ease;
-    }
-
-    @keyframes popIn {
-      from {
-        transform: translate(-50%, -50%) scale(0.5);
-        opacity: 0;
-      }
-      to {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-      }
-    }
-
     #instructions {
       position: fixed;
       bottom: 20px;
@@ -91,18 +67,83 @@
       text-align: right;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
+
+    .explosion {
+      position: fixed;
+      pointer-events: none;
+      font-size: 60px;
+      animation: explode 1s ease-out forwards;
+      z-index: 9998;
+    }
+
+    .message-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 0, 0, 0.9);
+      color: white;
+      padding: 30px 50px;
+      border-radius: 20px;
+      font-size: 36px;
+      font-weight: bold;
+      z-index: 9999;
+      animation: popupShow 1.2s ease;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+      border: 3px solid yellow;
+    }
+
+    @keyframes explode {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotate(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty)) scale(0.1) rotate(180deg);
+      }
+    }
+
+    @keyframes popupShow {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.3);
+      }
+      40% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    @keyframes celebrate {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(2);
+      }
+    }
   </style>
 </head>
 
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
-  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥</div>
+  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🎉</div>
 
   <script>
     let score = 0;
     const box = document.getElementById('box');
     const scoreDisplay = document.getElementById('score-display');
+    
+    // Load the custom explosion sound
+    const explosionSound = new Audio('https://raw.githubusercontent.com/vidar908/Test/main/Nytt%20opptak%202.m4a');
 
     function moveBox() {
       const maxX = window.innerWidth - box.offsetWidth;
@@ -118,8 +159,8 @@
       box.style.background = colors[Math.floor(Math.random() * colors.length)];
     }
 
-    function playSound() {
-      // Create a simple beep sound using Web Audio API
+    function playClickSound() {
+      // Regular click sound
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -127,21 +168,93 @@
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = 800;
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
       oscillator.type = 'sine';
       
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.1);
     }
 
+    function playExplosionSound() {
+      // Play the custom explosion sound
+      explosionSound.currentTime = 0;
+      explosionSound.volume = 0.8;
+      explosionSound.play().catch(err => console.log('Sound play error:', err));
+    }
+
+    function createBigExplosion() {
+      // Create big explosion with many particles
+      const explosionCount = 30;
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const explosionEmojis = ['💥', '🔥', '⚡', '💫', '✨'];
+      
+      for (let i = 0; i < explosionCount; i++) {
+        const explosion = document.createElement('div');
+        explosion.className = 'explosion';
+        explosion.textContent = explosionEmojis[Math.floor(Math.random() * explosionEmojis.length)];
+        
+        const angle = (i / explosionCount) * Math.PI * 2;
+        const distance = 200 + Math.random() * 150;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+        
+        explosion.style.setProperty('--tx', tx + 'px');
+        explosion.style.setProperty('--ty', ty + 'px');
+        
+        explosion.style.left = centerX + 'px';
+        explosion.style.top = centerY + 'px';
+        explosion.style.fontSize = (40 + Math.random() * 40) + 'px';
+        
+        document.body.appendChild(explosion);
+        setTimeout(() => explosion.remove(), 1000);
+      }
+    }
+
+    function showMessage(text) {
+      const popup = document.createElement('div');
+      popup.className = 'message-popup';
+      popup.textContent = text;
+      document.body.appendChild(popup);
+      
+      setTimeout(() => popup.remove(), 1200);
+    }
+
+    function showCelebration() {
+      for (let i = 0; i < 3; i++) {
+        const celebration = document.createElement('div');
+        celebration.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 80px;
+          z-index: 9999;
+          animation: celebrate 2s ease-out forwards;
+        `;
+        celebration.textContent = '🎉';
+        document.body.appendChild(celebration);
+        
+        setTimeout(() => {
+          celebration.remove();
+        }, 2000 + i * 300);
+      }
+    }
+
     function handleClick() {
       score++;
 
+      playClickSound();
+
       if (score % 10 === 0) {
-        playSound();
+        // EXPLOSION MODE!
+        playExplosionSound();
+        createBigExplosion();
+        showMessage('helt ærlig bror 💥');
         box.textContent = "💥";
         setTimeout(() => {
           box.textContent = score;
@@ -158,25 +271,7 @@
       moveBox();
     }
 
-    function showCelebration() {
-      // Create a festive celebration effect
-      const celebration = document.createElement('div');
-      celebration.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 80px;
-        z-index: 9999;
-        animation: celebrate 2s ease-out forwards;
-      `;
-      celebration.textContent = '🎉';
-      document.body.appendChild(celebration);
-      
-      setTimeout(() => celebration.remove(), 2000);
-    }
-
-    // Add celebration animation
+    // Add animation styles
     const style = document.createElement('style');
     style.textContent = `
       @keyframes celebrate {
@@ -192,10 +287,8 @@
     `;
     document.head.appendChild(style);
 
-    // Mouse click handler
     box.addEventListener('click', handleClick);
 
-    // Keyboard accessibility (Enter and Space)
     box.addEventListener('keydown', function(event) {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
@@ -203,7 +296,6 @@
       }
     });
 
-    // Initialize box position on page load
     moveBox();
   </script>
 </body>
