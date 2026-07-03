@@ -38,6 +38,7 @@
       position: absolute;
       transition: all 0.1s ease;
       user-select: none;
+      z-index: 100;
     }
 
     #box:hover {
@@ -57,6 +58,7 @@
       font-weight: bold;
       color: white;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      z-index: 101;
     }
 
     #instructions {
@@ -67,6 +69,7 @@
       font-size: 14px;
       text-align: right;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      z-index: 101;
     }
 
     .explosion {
@@ -273,10 +276,14 @@
       position: fixed;
       top: 50%;
       left: 50%;
-      font-size: 40px;
       z-index: 9997;
-      animation: bullCharge 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      animation: bullChargeInsane 2.5s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
       transform: translate(-50%, -50%);
+      font-size: 50px;
+    }
+
+    .bull-screen-shake {
+      animation: screenShake 0.15s cubic-bezier(0.36, 0, 0.66, -0.56) infinite;
     }
 
     @keyframes explode {
@@ -404,20 +411,65 @@
       }
     }
 
-    @keyframes bullCharge {
+    @keyframes bullChargeInsane {
       0% {
-        font-size: 40px;
-        opacity: 0.3;
-        transform: translate(-50%, -50%) scale(0.2);
+        font-size: 50px;
+        opacity: 0.2;
+        transform: translate(-50%, -50%) scale(0.1);
       }
-      50% {
-        font-size: 150px;
+      20% {
+        font-size: 120px;
+        opacity: 0.6;
+      }
+      40% {
+        font-size: 250px;
+        opacity: 0.8;
+      }
+      60% {
+        font-size: 400px;
+        opacity: 0.95;
+      }
+      80% {
+        font-size: 600px;
         opacity: 1;
       }
       100% {
-        font-size: 400px;
+        font-size: 800px;
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(-50%, -50%) scale(1.5);
+      }
+    }
+
+    @keyframes screenShake {
+      0%, 100% {
+        transform: translate(0, 0);
+      }
+      10% {
+        transform: translate(-5px, 5px);
+      }
+      20% {
+        transform: translate(5px, -5px);
+      }
+      30% {
+        transform: translate(-5px, -5px);
+      }
+      40% {
+        transform: translate(5px, 5px);
+      }
+      50% {
+        transform: translate(-8px, 8px);
+      }
+      60% {
+        transform: translate(8px, -8px);
+      }
+      70% {
+        transform: translate(-8px, -8px);
+      }
+      80% {
+        transform: translate(8px, 8px);
+      }
+      90% {
+        transform: translate(-10px, 10px);
       }
     }
   </style>
@@ -426,7 +478,7 @@
 <body>
   <div id="score-display">Score: 0</div>
   <button id="box" aria-label="Click to increase score">0</button>
-  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 30 clicks = 🕵️<br>Every 50 clicks = 👀<br>Every 75 clicks = ⚡<br>Random = 🐂 CHARGE!</div>
+  <div id="instructions">Click the box as fast as you can!<br>Every 10 clicks = 💥<br>Every 20 clicks = 🚶<br>Every 30 clicks = 🕵️<br>Every 50 clicks = 👀<br>Every 75 clicks = ⚡<br>Random = 🐂 CRAZY CHARGE!</div>
 
   <script>
     let score = 0;
@@ -501,65 +553,70 @@
       noiseSource.stop(audioContext.currentTime + 0.8);
     }
 
-    function playBullSnort() {
+    function playBullSnortIntense() {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       
-      // Create snorting sound
-      const bufferSize = audioContext.sampleRate * 0.4;
-      const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-      const output = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        output[i] = Math.random() * 2 - 1;
+      // Create INTENSE snorting sound that builds up
+      for (let snort = 0; snort < 3; snort++) {
+        const startTime = audioContext.currentTime + (snort * 0.3);
+        
+        // Noise component
+        const bufferSize = audioContext.sampleRate * 0.35;
+        const noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+        
+        const noiseSource = audioContext.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+        
+        const gainNode = audioContext.createGain();
+        noiseSource.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        gainNode.gain.setValueAtTime(0.6 + snort * 0.2, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.1, startTime + 0.35);
+        
+        noiseSource.start(startTime);
+        noiseSource.stop(startTime + 0.35);
+        
+        // Low frequency rumble
+        const oscillator = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+        oscillator.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(120 - snort * 20, startTime);
+        oscillator.frequency.exponentialRampToValueAtTime(80, startTime + 0.35);
+        oscillator.type = 'sine';
+        
+        gainNode2.gain.setValueAtTime(0.5 + snort * 0.15, startTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.05, startTime + 0.35);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.35);
       }
-      
-      const noiseSource = audioContext.createBufferSource();
-      noiseSource.buffer = noiseBuffer;
-      
-      const gainNode = audioContext.createGain();
-      noiseSource.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.02, audioContext.currentTime + 0.4);
-      
-      noiseSource.start(audioContext.currentTime);
-      noiseSource.stop(audioContext.currentTime + 0.4);
-      
-      // Add low frequency for charging sound
-      const oscillator = audioContext.createOscillator();
-      const gainNode2 = audioContext.createGain();
-      oscillator.connect(gainNode2);
-      gainNode2.connect(audioContext.destination);
-      
-      oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.4);
-      oscillator.type = 'sine';
-      
-      gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.4);
     }
 
-    function playBullCharge() {
+    function playBullChargeInsane() {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       
-      // Create hoofbeats/charging sound
-      for (let beat = 0; beat < 3; beat++) {
-        const startTime = audioContext.currentTime + (beat * 0.3);
+      // Create MASSIVE charging sound - heavy hoofbeats that build up
+      for (let beat = 0; beat < 5; beat++) {
+        const startTime = audioContext.currentTime + (beat * 0.25);
         
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
-        oscillator.frequency.setValueAtTime(150 - beat * 20, startTime);
+        oscillator.frequency.setValueAtTime(200 - beat * 25, startTime);
         oscillator.frequency.exponentialRampToValueAtTime(100, startTime + 0.2);
         oscillator.type = 'sine';
         
-        gainNode.gain.setValueAtTime(0.4, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+        gainNode.gain.setValueAtTime(0.7 + beat * 0.1, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.05, startTime + 0.2);
         
         oscillator.start(startTime);
         oscillator.stop(startTime + 0.2);
@@ -753,16 +810,23 @@
       }, 800);
     }
 
-    function showBullCharge() {
-      playBullSnort();
-      setTimeout(() => playBullCharge(), 200);
+    function showBullChargeInsane() {
+      playBullSnortIntense();
+      setTimeout(() => playBullChargeInsane(), 200);
+      
+      // Add screen shake to body
+      document.body.classList.add('bull-screen-shake');
       
       const bull = document.createElement('div');
       bull.className = 'bull-charge';
       bull.textContent = '🐂';
       
       document.body.appendChild(bull);
-      setTimeout(() => bull.remove(), 2000);
+      
+      setTimeout(() => {
+        bull.remove();
+        document.body.classList.remove('bull-screen-shake');
+      }, 2500);
       
       // Schedule next bull charge randomly between 8-20 seconds
       scheduleBullCharge();
@@ -774,7 +838,7 @@
       }
       const randomDelay = Math.random() * 12000 + 8000; // 8-20 seconds
       bullChargeTimeout = setTimeout(() => {
-        showBullCharge();
+        showBullChargeInsane();
       }, randomDelay);
     }
 
